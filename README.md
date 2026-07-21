@@ -38,19 +38,19 @@ No token is required for the health endpoint.
 
 ## 授权参数说明 (Authentication)
 
-Every request to `/mcp` must include a valid Reporting API key:
+Every request to `/mcp` must include the following HTTP header:
 
-```
-X-ConnectWise-Command-Api-Key: <api_key>
-```
+| Header | 类型 | 是否必填 | 默认值 | 枚举值 | 字段描述 | Example |
+|---|---|---|---|---|---|---|
+| `X-ConnectWise-Command-Api-Key` | string | 必填 | 无 | 无(自由文本) | ConnectWise Command (Continuum) Reporting API key,在 ITSupport247 门户 **Admin > Integration > Reporting API > Regenerate Key** 生成。服务端收到后转换为 HTTP Basic Auth(用户名留空,该 key 作为密码)发往上游 API,不做任何存储。 | `X-ConnectWise-Command-Api-Key: <your_reporting_api_key>` |
 
-Generate the key in the ITSupport247 portal: **Admin > Integration > Reporting API > Regenerate Key**. Internally, this server encodes it as HTTP Basic Auth with a **blank username**:
+Internally, this server encodes the key as:
 
 ```
 Authorization: Basic base64(":" + api_key)
 ```
 
-Unlike some other RMM vendors (e.g. N-able), ConnectWise Command's Reporting API hosts are **fixed public endpoints, not per-tenant** — there is no "URL" field to configure, matching the single "API Key" field on the app.mspbots.ai integration form. Missing `X-ConnectWise-Command-Api-Key` returns `401 Unauthorized`.
+Unlike some other RMM vendors (e.g. N-able), ConnectWise Command's Reporting API hosts are **fixed public endpoints, not per-tenant** — there is no "URL" field/header to configure, matching the single "API Key" field on the app.mspbots.ai integration form. Missing `X-ConnectWise-Command-Api-Key` returns `401 Unauthorized`.
 
 ## Environment Variables
 
