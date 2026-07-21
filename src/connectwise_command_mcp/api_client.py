@@ -3,6 +3,11 @@ from typing import Any
 
 import httpx
 
+# This legacy IIS/WCF service performs a mid-handshake TLS renegotiation and
+# can take several seconds to respond (observed ~10s against a live account).
+# httpx's default timeout (5s) is too short and trips a bare httpx.ReadTimeout.
+_REQUEST_TIMEOUT = httpx.Timeout(30.0)
+
 
 class ContinuumError(Exception):
     def __init__(self, message: str, error_code: str | None = None):
@@ -38,20 +43,20 @@ class ContinuumClient:
         """GET against the reporting/v1 host (Sites and Devices resources)."""
         target = f"{self._sites_base_url}{path}"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
                 resp = await client.get(target, headers=self._headers())
         except httpx.RequestError as e:
-            raise ContinuumError(f"Could not reach {target!r}: {e}") from None
+            raise ContinuumError(f"Could not reach {target!r}: {e or type(e).__name__}") from None
         return self._parse(resp, target)
 
     async def call_legacy(self, resource: str, body: dict | None = None) -> Any:
         """POST a JSON body against legacy ReportingAPIService.svc/json/{resource}."""
         target = f"{self._legacy_base_url}/{resource}"
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
                 resp = await client.post(target, headers=self._headers(), json=body or {})
         except httpx.RequestError as e:
-            raise ContinuumError(f"Could not reach {target!r}: {e}") from None
+            raise ContinuumError(f"Could not reach {target!r}: {e or type(e).__name__}") from None
         return self._parse(resp, target)
 
     def _parse(self, resp: httpx.Response, target: str) -> Any:
