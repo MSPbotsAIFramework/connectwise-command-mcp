@@ -89,11 +89,26 @@ def create_mcp_server(settings: Settings) -> FastMCP:
         settings
     )
 
-    from .tools import antivirus, patches, reports, sites_devices
+    from .tools import (
+        agent_system,
+        antivirus,
+        availability,
+        backup,
+        misc,
+        patches,
+        performance,
+        sites_devices,
+        warranty,
+    )
 
     sites_devices.register(mcp, client_factory)
+    agent_system.register(mcp, client_factory)
     antivirus.register(mcp, client_factory)
     patches.register(mcp, client_factory)
-    reports.register(mcp, client_factory)
+    performance.register(mcp, client_factory)
+    availability.register(mcp, client_factory)
+    warranty.register(mcp, client_factory)
+    backup.register(mcp, client_factory)
+    misc.register(mcp, client_factory)
 
     return mcp

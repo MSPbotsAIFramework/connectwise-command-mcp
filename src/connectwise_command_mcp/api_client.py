@@ -64,9 +64,15 @@ class ContinuumClient:
         except ValueError:
             return {"raw_response": resp.text}
 
-        # Error shape confirmed from MSPbots' own error-parsing code:
-        # {"Error": {"code": ..., "message": "Unable to retrieve site..."}}
-        if isinstance(data, dict) and "Error" in data and data["Error"]:
-            err = data["Error"]
-            raise ContinuumError(err.get("message", "Unknown error"), err.get("code"))
+        # Error key casing AND position are inconsistent across resources in
+        # the official "Reporting API REST Resources" doc: some use "Error"
+        # (capital, e.g. Agent Details), most use "error" (lowercase, e.g.
+        # Antivirus Summary); check both. GET endpoints (Sites/Devices)
+        # return a bare list with no error wrapper at all.
+        if isinstance(data, dict):
+            err = data.get("Error", data.get("error"))
+            if err:
+                if isinstance(err, dict):
+                    raise ContinuumError(err.get("message", "Unknown error"), err.get("code"))
+                raise ContinuumError(str(err))
         return data
