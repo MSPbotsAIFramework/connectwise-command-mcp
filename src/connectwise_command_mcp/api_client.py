@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from typing import Any
 
@@ -7,6 +8,15 @@ import httpx
 # can take several seconds to respond (observed ~10s against a live account).
 # httpx's default timeout (5s) is too short and trips a bare httpx.ReadTimeout.
 _REQUEST_TIMEOUT = httpx.Timeout(30.0)
+
+# The vendor's reporting/v1 host (Sites/Devices) has been observed to return
+# intermittent 503s that clear within seconds (3 consecutive real requests:
+# 503, 503, 401) — a transient blip, not a sustained outage. Retry a handful
+# of times with backoff on 502/503/504 and network errors before giving up;
+# do not retry other status codes (e.g. 401/404), which are not transient.
+_RETRY_STATUS_CODES = {502, 503, 504}
+_MAX_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = (0.5, 1.5)
 
 
 class ContinuumError(Exception):
@@ -42,22 +52,32 @@ class ContinuumClient:
     async def get_sites_v1(self, path: str) -> Any:
         """GET against the reporting/v1 host (Sites and Devices resources)."""
         target = f"{self._sites_base_url}{path}"
-        try:
-            async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
-                resp = await client.get(target, headers=self._headers())
-        except httpx.RequestError as e:
-            raise ContinuumError(f"Could not reach {target!r}: {e or type(e).__name__}") from None
+        resp = await self._request_with_retry("GET", target)
         return self._parse(resp, target)
 
     async def call_legacy(self, resource: str, body: dict | None = None) -> Any:
         """POST a JSON body against legacy ReportingAPIService.svc/json/{resource}."""
         target = f"{self._legacy_base_url}/{resource}"
-        try:
-            async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
-                resp = await client.post(target, headers=self._headers(), json=body or {})
-        except httpx.RequestError as e:
-            raise ContinuumError(f"Could not reach {target!r}: {e or type(e).__name__}") from None
+        resp = await self._request_with_retry("POST", target, json=body or {})
         return self._parse(resp, target)
+
+    async def _request_with_retry(self, method: str, target: str, **kwargs: Any) -> httpx.Response:
+        last_error: Exception | None = None
+        for attempt in range(_MAX_ATTEMPTS):
+            try:
+                async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+                    resp = await client.request(method, target, headers=self._headers(), **kwargs)
+            except httpx.RequestError as e:
+                last_error = e
+            else:
+                if resp.status_code not in _RETRY_STATUS_CODES:
+                    return resp
+                last_error = ContinuumError(f"HTTP {resp.status_code} from {target}: {resp.text[:300]}")
+            if attempt < _MAX_ATTEMPTS - 1:
+                await asyncio.sleep(_RETRY_BACKOFF_SECONDS[attempt])
+        if isinstance(last_error, ContinuumError):
+            raise last_error
+        raise ContinuumError(f"Could not reach {target!r}: {last_error or type(last_error).__name__}") from None
 
     def _parse(self, resp: httpx.Response, target: str) -> Any:
         if resp.status_code >= 400:
