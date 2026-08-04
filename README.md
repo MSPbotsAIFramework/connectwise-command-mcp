@@ -73,7 +73,9 @@ Connect your MCP client with:
 
 ## Tool List
 
-41 tools — full coverage of every resource in the official "Reporting API REST Resources" doc. Most take `site_code` (get one from `connectwise_command_get_sites` first) plus `month`/`year` (int); several also take `resource_type` ("desktop" or "server", per-resource restrictions noted where the doc fixes it to one value).
+**21 tools**, trimmed down from an original 41-tool full-API build (2026-08-04). MSPbots' own stored integration config for this vendor calls **19 endpoints** (confirmed via `web/int/sys/integration/api/list` against integration id `1424565871921713153`), spanning Antivirus (7 of 7 kept — every antivirus tool is actually used), Patches (4 of 4 kept — same), Warranty (3 of 3 kept — same), Sites/Devices (2 of 3 actually used, kept all 3 since the category is small), Agent/System/Software (3 of 3 kept — same), plus a single Misc tool (`get_score_summary`, the one Misc endpoint actually used). Everything else from the original 41-tool build — Performance (7), Availability (3), Recover for Continuity/Backup (4), and the other 6 Misc tools (noncompliant mobile devices, OS summary, service requests by month/week, SNMP devices, work summary) — was removed as unused by MSPbots. If a removed tool is needed later, the official "Reporting API REST Resources" doc (linked below) still documents it and it can be re-added the same way the kept tools were generated.
+
+Most kept tools take `site_code` (get one from `connectwise_command_get_sites` first) plus `month`/`year` (int); several also take `resource_type` ("desktop" or "server", per-resource restrictions noted where the doc fixes it to one value).
 
 ### Sites, Devices & Summary
 
@@ -112,26 +114,6 @@ Connect your MCP client with:
 | `connectwise_command_get_patch_summary_by_severity` | 按严重程度的补丁计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 | `connectwise_command_get_patch_summary_by_state` | 按状态(已装/缺失/黑名单等)的补丁总数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 
-### Performance
-
-| Tool | 功能 | 参数 |
-|---|---|---|
-| `connectwise_command_get_cpu_utilization` | 服务器 CPU 月度最小/最大/平均值及每日均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_disk_usage` | 服务器磁盘空间月度最小/最大/平均值及每日均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_disk_io_utilization` | 服务器磁盘 IO 月度最小/最大/平均值及每日均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_memory_utilization` | 服务器内存月度最小/最大/平均值及每日均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_pagefile_utilization` | 服务器 PageFile 月度最小/最大/平均值及每日均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_disk_space_utilization` | 按设备的磁盘空间使用百分比 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_server_utilization` | 服务器月度平均 CPU/磁盘/内存使用率 | `site_code`, `month`, `year` (均必填) |
-
-### Availability
-
-| Tool | 功能 | 参数 |
-|---|---|---|
-| `connectwise_command_get_daily_server_availability` | 站点全部服务器每日平均可用性 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_server_availability_monthly` | 服务器可用性月度平均值 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_daily_server_utilization` | 每日服务器综合利用率(CPU/内存/磁盘IO/磁盘空间/PageFile) | `site_code`, `month`, `year` (均必填) |
-
 ### Warranty
 
 | Tool | 功能 | 参数 |
@@ -140,26 +122,11 @@ Connect your MCP client with:
 | `connectwise_command_get_warranty_details` | 设备保修详情(不需要 month/year) | `site_code` (必填), `include_warranty_history?`(默认 false) |
 | `connectwise_command_get_warranty_summary` | 保修状态(有效/过期/无数据)计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 
-### Recover for Continuity (Backup)
-
-| Tool | 功能 | 参数 |
-|---|---|---|
-| `connectwise_command_get_continuity_appliances` | 站点已部署的 Recover for Continuity 备份设备列表 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_continuity_backup_summary` | 备份成功/失败百分比总览 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_continuity_backup_summary_by_resource` | 按受保护资源的备份结果 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_continuity_protected_resources` | 受 Recover for Continuity 保护的资源列表 | `site_code`, `month`, `year` (均必填) |
-
 ### Misc
 
 | Tool | 功能 | 参数 |
 |---|---|---|
-| `connectwise_command_get_noncompliant_mobile_devices` | 不符合企业策略的移动设备列表 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_operating_system_summary` | 操作系统分布与设备数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 | `connectwise_command_get_score_summary` | 站点整体健康/风险评分(多项指标,-1 表示该站点不适用) | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_service_requests_by_month` | 近6个月工单开关数量 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_service_requests_by_week` | 近6周工单开关数量 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_snmp_devices` | 站点下 SNMP 设备(路由器/交换机等)列表 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_work_summary` | 技术支持工作记录汇总 | `site_code`, `month`, `year` (均必填) |
 
 ## 测试示例 (Test Example)
 
@@ -206,6 +173,15 @@ A month/year-based resource:
 
 ## Implementation Notes
 
+- **Trimmed from 41 to 21 tools on 2026-08-04.** The original build covered
+  every resource in the official Reporting API doc. A later scope decision
+  cut this back to MSPbots' actually-configured 19 endpoints plus the
+  small always-kept Sites/Devices/Agent/System categories — see the Tool
+  List section above for the exact rationale and the full list of removed
+  tools (Performance, Availability, Recover for Continuity/Backup, and 6
+  of 7 Misc tools — 17 tools total). If a removed tool is needed later,
+  the official Reporting API doc (linked below) still documents it and it
+  can be re-added the same way the kept tools were generated.
 - **Error shape varies by resource** — some responses use `"Error"` (capital, e.g. Agent Details), most use `"error"` (lowercase, e.g. Antivirus Summary), and the position in the response varies (top, bottom, or nested per-item). `ContinuumClient._parse` checks both casings.
 - **GET resources (`Sites`, `Devices`) return a bare JSON array**, not an object with an `error` key.
 - **Request field name `MachineID`** (used in the request body for Antivirus Version Summary, Installed Software, System Information) differs in casing from the response field `MachineId` — both confirmed verbatim from the official doc.
