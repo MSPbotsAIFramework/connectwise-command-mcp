@@ -82,6 +82,22 @@ def create_mcp_server(settings: Settings) -> FastMCP:
     # correctly behind a reverse proxy or docker network.
     mcp = FastMCP(
         name="connectwise-command-mcp",
+        instructions=(
+            "ConnectWise Command (formerly Continuum) is an RMM/reporting platform MSPs "
+            "use to monitor, patch, and report on managed client environments. This "
+            "server wraps its Reporting API as 6 tool-domain groups: sites_devices (site "
+            "list + device inventory + site summary — start here to get a site_code) -> "
+            "agent_system (per-device agent status, hardware/OS info, installed "
+            "software) -> antivirus (protection state, outdated/missing/unsupported AV "
+            "across desktops/servers) -> patches (missing patches, counts by "
+            "resource/severity/state) -> warranty (expiring warranties, device warranty "
+            "details, status counts) -> misc (overall site health/risk score). Typical "
+            "flow: call connectwise_command_get_sites for a site_code, then pass it "
+            "(plus month/year, and resource_type where required: \"desktop\" or "
+            "\"server\") into the domain tool for the report needed. All tools are "
+            "read-only historical-reporting queries; there are no write/delete tools in "
+            "this service."
+        ),
         transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
     )
 

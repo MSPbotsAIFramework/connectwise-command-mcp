@@ -1,4 +1,10 @@
-NO_TOKEN = "Error: No ConnectWise Command API key. Send the X-ConnectWise-Command-Api-Key header."
+from .._json import error_envelope
+
+NO_TOKEN = error_envelope(
+    "not_configured",
+    "No ConnectWise Command API key. Send the X-ConnectWise-Command-Api-Key header.",
+    False,
+)
 
 
 def body(

@@ -31,7 +31,7 @@ python -m connectwise_command_mcp
 
 ```bash
 curl http://localhost:8080/health
-# {"status": "ok", "service": "connectwise-command-mcp", "transport": "http"}
+# {"status": "ok"}
 ```
 
 No token is required for the health endpoint.
