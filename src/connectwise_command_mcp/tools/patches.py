@@ -32,22 +32,6 @@ def register(mcp: FastMCP, client_factory: Callable[[], ContinuumClient | None])
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectwise_command_get_patch_summary_by_resource(
-        site_code: _SITE_CODE, month: _MONTH, year: _YEAR, resource_type: _RESOURCE_TYPE
-    ) -> str:
-        """Get patch counts by state (installed/missing/blacklisted/etc.) per device at a site."""
-        client = client_factory()
-        if client is None:
-            return NO_TOKEN
-        try:
-            result = await client.call_legacy(
-                "patches/resources", body(site_code, month, year, resource_type)
-            )
-            return dump_json_capped(result)
-        except ContinuumError as e:
-            return e.to_envelope()
-
-    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def connectwise_command_get_patch_summary_by_severity(
         site_code: _SITE_CODE, month: _MONTH, year: _YEAR, resource_type: _RESOURCE_TYPE
     ) -> str:
@@ -59,22 +43,6 @@ def register(mcp: FastMCP, client_factory: Callable[[], ContinuumClient | None])
         try:
             result = await client.call_legacy(
                 "patches/severity", body(site_code, month, year, resource_type)
-            )
-            return dump_json_capped(result)
-        except ContinuumError as e:
-            return e.to_envelope()
-
-    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectwise_command_get_patch_summary_by_state(
-        site_code: _SITE_CODE, month: _MONTH, year: _YEAR, resource_type: _RESOURCE_TYPE
-    ) -> str:
-        """Get total patch counts by state (installed/missing/blacklisted/etc.) at a site."""
-        client = client_factory()
-        if client is None:
-            return NO_TOKEN
-        try:
-            result = await client.call_legacy(
-                "patches/state", body(site_code, month, year, resource_type)
             )
             return dump_json_capped(result)
         except ContinuumError as e:

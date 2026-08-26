@@ -55,19 +55,7 @@ EXPECTED_TOOLS = {
     },
     # patches
     "connectwise_command_get_missing_patches": {"site_code", "month", "year"},
-    "connectwise_command_get_patch_summary_by_resource": {
-        "site_code",
-        "month",
-        "year",
-        "resource_type",
-    },
     "connectwise_command_get_patch_summary_by_severity": {
-        "site_code",
-        "month",
-        "year",
-        "resource_type",
-    },
-    "connectwise_command_get_patch_summary_by_state": {
         "site_code",
         "month",
         "year",

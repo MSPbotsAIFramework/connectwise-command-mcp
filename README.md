@@ -73,7 +73,9 @@ Connect your MCP client with:
 
 ## Tool List
 
-**21 tools**, trimmed down from an original 41-tool full-API build (2026-08-04). MSPbots' own stored integration config for this vendor calls **19 endpoints** (confirmed via `web/int/sys/integration/api/list` against integration id `1424565871921713153`), spanning Antivirus (7 of 7 kept — every antivirus tool is actually used), Patches (4 of 4 kept — same), Warranty (3 of 3 kept — same), Sites/Devices (2 of 3 actually used, kept all 3 since the category is small), Agent/System/Software (3 of 3 kept — same), plus a single Misc tool (`get_score_summary`, the one Misc endpoint actually used). Everything else from the original 41-tool build — Performance (7), Availability (3), Recover for Continuity/Backup (4), and the other 6 Misc tools (noncompliant mobile devices, OS summary, service requests by month/week, SNMP devices, work summary) — was removed as unused by MSPbots. If a removed tool is needed later, the official "Reporting API REST Resources" doc (linked below) still documents it and it can be re-added the same way the kept tools were generated.
+**19 tools.** Trimmed from an original 41-tool full-API build (2026-08-04) down to 21 tools matching MSPbots' actually-configured 19 endpoints, then a further 2026-08-26 trim removed `connectwise_command_get_patch_summary_by_resource` and `connectwise_command_get_patch_summary_by_state` — an intent-matching test pass found their descriptions were near-duplicates of each other ("Get [total] patch counts by state... [per device]", differing only by a few trailing words), a real misfire risk since a mixup silently swaps a per-device breakdown for a site-wide aggregate on the same underlying data. Rather than patch the wording, both were removed; `connectwise_command_get_patch_summary_by_severity` and `connectwise_command_get_missing_patches` still cover patch reporting without that ambiguity. If either removed tool is needed later, the official "Reporting API REST Resources" doc (linked below) still documents it and it can be re-added; git history has both implementations verbatim.
+
+Everything else from the original 41-tool build — Performance (7), Availability (3), Recover for Continuity/Backup (4), and 6 of 7 Misc tools (noncompliant mobile devices, OS summary, service requests by month/week, SNMP devices, work summary) — was removed on 2026-08-04 as unused by MSPbots.
 
 Most kept tools take `site_code` (get one from `connectwise_command_get_sites` first) plus `month`/`year` (int); several also take `resource_type` ("desktop" or "server", per-resource restrictions noted where the doc fixes it to one value).
 
@@ -110,9 +112,7 @@ Most kept tools take `site_code` (get one from `connectwise_command_get_sites` f
 | Tool | 功能 | 参数 |
 |---|---|---|
 | `connectwise_command_get_missing_patches` | 桌面机缺失补丁汇总 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_patch_summary_by_resource` | 按设备维度的补丁状态计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 | `connectwise_command_get_patch_summary_by_severity` | 按严重程度的补丁计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_patch_summary_by_state` | 按状态(已装/缺失/黑名单等)的补丁总数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 
 ### Warranty
 
@@ -173,15 +173,15 @@ A month/year-based resource:
 
 ## Implementation Notes
 
-- **Trimmed from 41 to 21 tools on 2026-08-04.** The original build covered
-  every resource in the official Reporting API doc. A later scope decision
-  cut this back to MSPbots' actually-configured 19 endpoints plus the
-  small always-kept Sites/Devices/Agent/System categories — see the Tool
-  List section above for the exact rationale and the full list of removed
-  tools (Performance, Availability, Recover for Continuity/Backup, and 6
-  of 7 Misc tools — 17 tools total). If a removed tool is needed later,
-  the official Reporting API doc (linked below) still documents it and it
-  can be re-added the same way the kept tools were generated.
+- **Trimmed twice**: 41 tools (full API) → 21 tools on 2026-08-04 (MSPbots'
+  actually-configured 19 endpoints plus the small always-kept Sites/Devices/
+  Agent/System categories) → **19 tools on 2026-08-26** (removed
+  `get_patch_summary_by_resource`/`get_patch_summary_by_state` — see Tool
+  List above for why). See the Tool List section for the full rationale
+  each time. If a removed tool is needed later, the official Reporting API
+  doc (linked below) still documents it and it can be re-added the same
+  way the kept tools were generated; git history has every removed tool's
+  implementation verbatim.
 - **Error shape varies by resource** — some responses use `"Error"` (capital, e.g. Agent Details), most use `"error"` (lowercase, e.g. Antivirus Summary), and the position in the response varies (top, bottom, or nested per-item). `ContinuumClient._parse` checks both casings.
 - **GET resources (`Sites`, `Devices`) return a bare JSON array**, not an object with an `error` key.
 - **Request field name `MachineID`** (used in the request body for Antivirus Version Summary, Installed Software, System Information) differs in casing from the response field `MachineId` — both confirmed verbatim from the official doc.
