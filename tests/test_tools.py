@@ -68,7 +68,6 @@ EXPECTED_TOOLS = {
         "year",
         "resource_type",
     },
-    "connectwise_command_get_warranty_details": {"site_code"},
     "connectwise_command_get_warranty_summary": {
         "site_code",
         "month",

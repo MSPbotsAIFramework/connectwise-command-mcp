@@ -34,32 +34,6 @@ def register(mcp: FastMCP, client_factory: Callable[[], ContinuumClient | None])
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectwise_command_get_warranty_details(
-        site_code: _SITE_CODE,
-        include_warranty_history: Annotated[
-            bool, Field(description="Whether to include past warranty history.")
-        ] = False,
-    ) -> str:
-        """Get device warranty details for a site.
-
-        Takes no month/year — only site_code and include_warranty_history.
-        """
-        client = client_factory()
-        if client is None:
-            return NO_TOKEN
-        try:
-            result = await client.call_legacy(
-                "warranty/details",
-                {
-                    "IncludeWarrantyHistory": "1" if include_warranty_history else "0",
-                    "SiteCode": site_code,
-                },
-            )
-            return dump_json_capped(result)
-        except ContinuumError as e:
-            return e.to_envelope()
-
-    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def connectwise_command_get_warranty_summary(
         site_code: _SITE_CODE, month: _MONTH, year: _YEAR, resource_type: _RESOURCE_TYPE
     ) -> str:

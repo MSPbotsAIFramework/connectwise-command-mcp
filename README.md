@@ -73,7 +73,11 @@ Connect your MCP client with:
 
 ## Tool List
 
-**19 tools.** Trimmed from an original 41-tool full-API build (2026-08-04) down to 21 tools matching MSPbots' actually-configured 19 endpoints, then a further 2026-08-26 trim removed `connectwise_command_get_patch_summary_by_resource` and `connectwise_command_get_patch_summary_by_state` — an intent-matching test pass found their descriptions were near-duplicates of each other ("Get [total] patch counts by state... [per device]", differing only by a few trailing words), a real misfire risk since a mixup silently swaps a per-device breakdown for a site-wide aggregate on the same underlying data. Rather than patch the wording, both were removed; `connectwise_command_get_patch_summary_by_severity` and `connectwise_command_get_missing_patches` still cover patch reporting without that ambiguity. If either removed tool is needed later, the official "Reporting API REST Resources" doc (linked below) still documents it and it can be re-added; git history has both implementations verbatim.
+**18 tools.** Trimmed from an original 41-tool full-API build (2026-08-04) down to 21 tools matching MSPbots' actually-configured 19 endpoints, then a further 2026-08-26 trim removed 3 more:
+- `connectwise_command_get_patch_summary_by_resource` and `connectwise_command_get_patch_summary_by_state` — an intent-matching test pass found their descriptions were near-duplicates of each other ("Get [total] patch counts by state... [per device]", differing only by a few trailing words), a real misfire risk since a mixup silently swaps a per-device breakdown for a site-wide aggregate on the same underlying data. `connectwise_command_get_patch_summary_by_severity` and `connectwise_command_get_missing_patches` still cover patch reporting without that ambiguity.
+- `connectwise_command_get_warranty_details` — the same test pass found it doesn't take a device/machine filter at all (unlike its siblings), always returning every device's warranty info for the whole site; a caller asking about "this device's warranty" gets no argument to scope to just that device and has to filter the returned list itself. Removed rather than just documenting the gap — `connectwise_command_get_expiring_warranties` and `connectwise_command_get_warranty_summary` still cover warranty reporting.
+
+If a removed tool is needed later, the official "Reporting API REST Resources" doc (linked below) still documents it and it can be re-added; git history has every removed tool's implementation verbatim.
 
 Everything else from the original 41-tool build — Performance (7), Availability (3), Recover for Continuity/Backup (4), and 6 of 7 Misc tools (noncompliant mobile devices, OS summary, service requests by month/week, SNMP devices, work summary) — was removed on 2026-08-04 as unused by MSPbots.
 
@@ -119,7 +123,6 @@ Most kept tools take `site_code` (get one from `connectwise_command_get_sites` f
 | Tool | 功能 | 参数 |
 |---|---|---|
 | `connectwise_command_get_expiring_warranties` | 已过期或即将过期保修的设备列表 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_warranty_details` | 设备保修详情(不需要 month/year) | `site_code` (必填), `include_warranty_history?`(默认 false) |
 | `connectwise_command_get_warranty_summary` | 保修状态(有效/过期/无数据)计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
 
 ### Misc
@@ -175,12 +178,13 @@ A month/year-based resource:
 
 - **Trimmed twice**: 41 tools (full API) → 21 tools on 2026-08-04 (MSPbots'
   actually-configured 19 endpoints plus the small always-kept Sites/Devices/
-  Agent/System categories) → **19 tools on 2026-08-26** (removed
-  `get_patch_summary_by_resource`/`get_patch_summary_by_state` — see Tool
-  List above for why). See the Tool List section for the full rationale
-  each time. If a removed tool is needed later, the official Reporting API
-  doc (linked below) still documents it and it can be re-added the same
-  way the kept tools were generated; git history has every removed tool's
+  Agent/System categories) → **18 tools on 2026-08-26** (removed
+  `get_patch_summary_by_resource`/`get_patch_summary_by_state`/
+  `get_warranty_details` — see Tool List above for why). See the Tool List
+  section for the full rationale each time. If a removed tool is needed
+  later, the official Reporting API doc (linked below) still documents it
+  and it can be re-added the same way the kept tools were generated; git
+  history has every removed tool's
   implementation verbatim.
 - **Error shape varies by resource** — some responses use `"Error"` (capital, e.g. Agent Details), most use `"error"` (lowercase, e.g. Antivirus Summary), and the position in the response varies (top, bottom, or nested per-item). `ContinuumClient._parse` checks both casings.
 - **GET resources (`Sites`, `Devices`) return a bare JSON array**, not an object with an `error` key.
