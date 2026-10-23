@@ -108,13 +108,13 @@ curl http://localhost:8080/health
 
 No token is required for the health endpoint.
 
-## 授权参数说明 (Authentication)
+## Authentication
 
 Every request to `/mcp` must include the following HTTP header:
 
-| Header | 类型 | 是否必填 | 默认值 | 枚举值 | 字段描述 | Example |
+| Header | Type | Required | Default | Allowed values | Description | Example |
 |---|---|---|---|---|---|---|
-| `X-ConnectWise-Command-Api-Key` | string | 必填 | 无 | 无(自由文本) | ConnectWise Command (Continuum) Reporting API key,在 ITSupport247 门户 **Admin > Integration > Reporting API > Regenerate Key** 生成。服务端收到后转换为 HTTP Basic Auth(用户名留空,该 key 作为密码)发往上游 API,不做任何存储。 | `X-ConnectWise-Command-Api-Key: <your_reporting_api_key>` |
+| `X-ConnectWise-Command-Api-Key` | string | Required | None | None (free text) | ConnectWise Command (Continuum) Reporting API key, generated in the ITSupport247 portal under **Admin > Integration > Reporting API > Regenerate Key**. On receipt the server converts it to HTTP Basic Auth (empty username, the key as the password) and sends it to the upstream API, without storing anything. | `X-ConnectWise-Command-Api-Key: <your_reporting_api_key>` |
 
 Internally, this server encodes the key as:
 
@@ -157,53 +157,53 @@ Most kept tools take `site_code` (get one from `connectwise_command_get_sites` f
 
 ### Sites, Devices & Summary
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_sites` | 列出该 API key 可见的所有活跃站点 | 无参数 |
-| `connectwise_command_get_devices` | 列出站点下的设备,可选定位到单设备 | `site_code` (必填), `machine_id?` |
-| `connectwise_command_get_site_summary` | 站点资产与工单概况 | `site_code`, `month`, `year` (均必填) |
+| `connectwise_command_get_sites` | List all active sites visible to this API key | None |
+| `connectwise_command_get_devices` | List the devices under a site, optionally targeting a single device | `site_code` (required), `machine_id?` |
+| `connectwise_command_get_site_summary` | Site asset and ticket overview | `site_code`, `month`, `year` (all required) |
 
 ### Agent / System / Software
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_agent_details` | 站点内所有设备的监控代理详情(也用于获取 Machine ID) | `site_code` (必填) |
-| `connectwise_command_get_system_information` | 系统硬件/OS/BIOS 信息,可选定位到单设备 | `site_code` (必填), `machine_id?` |
-| `connectwise_command_get_installed_software` | 已安装软件列表,可选定位到单设备 | `site_code` (必填), `machine_id?` |
+| `connectwise_command_get_agent_details` | Monitoring agent details for all devices in a site (also used to get the Machine ID) | `site_code` (required) |
+| `connectwise_command_get_system_information` | System hardware/OS/BIOS information, optionally targeting a single device | `site_code` (required), `machine_id?` |
+| `connectwise_command_get_installed_software` | Installed software list, optionally targeting a single device | `site_code` (required), `machine_id?` |
 
 ### Antivirus
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_antivirus_ages` | 桌面机防病毒库更新时长(天),仅支持 desktop | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_antivirus_summary` | 防病毒防护状态计数汇总 | `site_code`, `month`, `year`, `resource_type` (均必填,"Desktop"/"server") |
-| `connectwise_command_get_antivirus_version_summary` | 防病毒产品/版本,可选定位到单设备 | `site_code` (必填), `machine_id?` |
-| `connectwise_command_get_daily_antivirus_status` | 每日防病毒状态 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_missing_antivirus` | 缺失防病毒防护的设备列表 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_outdated_antivirus` | 病毒库过期的设备列表 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_unsupported_antivirus` | 使用不受支持防病毒产品的设备列表 | `site_code`, `month`, `year`, `resource_type` (均必填) |
+| `connectwise_command_get_antivirus_ages` | Age in days of desktop antivirus definitions, desktop only | `site_code`, `month`, `year` (all required) |
+| `connectwise_command_get_antivirus_summary` | Antivirus protection status count summary | `site_code`, `month`, `year`, `resource_type` (all required,"Desktop"/"server") |
+| `connectwise_command_get_antivirus_version_summary` | Antivirus product/version, optionally targeting a single device | `site_code` (required), `machine_id?` |
+| `connectwise_command_get_daily_antivirus_status` | Daily antivirus status | `site_code`, `month`, `year`, `resource_type` (all required) |
+| `connectwise_command_get_missing_antivirus` | List of devices missing antivirus protection | `site_code`, `month`, `year`, `resource_type` (all required) |
+| `connectwise_command_get_outdated_antivirus` | List of devices with outdated antivirus definitions | `site_code`, `month`, `year`, `resource_type` (all required) |
+| `connectwise_command_get_unsupported_antivirus` | List of devices using unsupported antivirus products | `site_code`, `month`, `year`, `resource_type` (all required) |
 
 ### Patches
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_missing_patches` | 桌面机缺失补丁汇总 | `site_code`, `month`, `year` (均必填) |
-| `connectwise_command_get_patch_summary_by_severity` | 按严重程度的补丁计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
+| `connectwise_command_get_missing_patches` | Summary of missing patches on desktops | `site_code`, `month`, `year` (all required) |
+| `connectwise_command_get_patch_summary_by_severity` | Patch counts by severity | `site_code`, `month`, `year`, `resource_type` (all required) |
 
 ### Warranty
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_expiring_warranties` | 已过期或即将过期保修的设备列表 | `site_code`, `month`, `year`, `resource_type` (均必填) |
-| `connectwise_command_get_warranty_summary` | 保修状态(有效/过期/无数据)计数 | `site_code`, `month`, `year`, `resource_type` (均必填) |
+| `connectwise_command_get_expiring_warranties` | List of devices with expired or soon-to-expire warranties | `site_code`, `month`, `year`, `resource_type` (all required) |
+| `connectwise_command_get_warranty_summary` | Warranty status (active/expired/no data) counts | `site_code`, `month`, `year`, `resource_type` (all required) |
 
 ### Misc
 
-| Tool | 功能 | 参数 |
+| Tool | Description | Parameters |
 |---|---|---|
-| `connectwise_command_get_score_summary` | 站点整体健康/风险评分(多项指标,-1 表示该站点不适用) | `site_code`, `month`, `year` (均必填) |
+| `connectwise_command_get_score_summary` | Overall site health/risk score (multiple metrics; -1 means not applicable to the site) | `site_code`, `month`, `year` (all required) |
 
-## 测试示例 (Test Example)
+## Test Example
 
 List all sites, then get devices for one:
 
